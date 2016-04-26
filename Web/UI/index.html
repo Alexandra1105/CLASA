@@ -1,0 +1,121 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasa</title>
+    <link rel="stylesheet" href="css/foundation.css">
+    <link rel="stylesheet" href="css/app.css">
+  </head>
+  <body>
+
+</style>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet">
+
+<nav role="navigation">
+  <ul id="menu" class="overlay-menu">
+    <li><a href="camera.php">Capture</a></li>
+    <li><a href="#">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <a class="toggle-menu" href="#menu"><i class="fi-plus"></i></a>
+</nav>
+<div class="row">
+<div class="small-12">
+<div id="googleMap" style=""></div>
+</div>
+</div>
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/vendor/what-input.js"></script>
+    <script src="js/vendor/foundation.js"></script>
+    <script src="js/app.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+  <script src="http://maps.googleapis.com/maps/api/js"></script>
+  <script>
+	$(document).ready(function() {
+	            var map;
+
+				initialize();
+		});
+
+	var initialLocation;
+	var siberia = new google.maps.LatLng(60, 105);
+	var newyork = new google.maps.LatLng(40.69847032728747, -73.9514422416687);
+	var browserSupportFlag =  new Boolean();
+
+	function initialize() {
+    var myOptions = {
+      zoom: 5,
+      mapTypeControl:false,
+      streetViewControl:false,
+      ZoomControlOptions:"TOP_RIGHT",
+
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      styles:[{"featureType":"administrative","elementType":"labels","stylers":[{"color":"#FFFFFF"},{"visibility":"simplified"}]},{"featureType":"landscape.man_made","elementType":"all","stylers":[{"visibility":"simplified"},{"color":"#303030"}]},{"featureType":"landscape.natural","elementType":"geometry","stylers":[{"color":"#000000"},{"visibility":"simplified"}]},{"featureType":"poi","elementType":"geometry","stylers":[{"visibility":"off"}]},{"featureType":"poi","elementType":"labels.text","stylers":[{"visibility":"simplified"},{"color":"#FFFFFF"}]},{"featureType":"road","elementType":"geometry","stylers":[{"visibility":"simplified"},{"color":"#808080"}]},{"featureType":"road","elementType":"labels.text","stylers":[{"color":"#FFFFFF"},{"visibility":"simplified"}]},{"featureType":"road","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#303030"}]}]
+    };
+
+	  map = new google.maps.Map(document.getElementById("googleMap"), myOptions);
+	  // Try W3C Geolocation (Preferred)
+	  if(navigator.geolocation) {
+	    browserSupportFlag = true;
+	    navigator.geolocation.getCurrentPosition(function(position) {
+	      initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+	      loadAirports();
+	      map.setCenter(initialLocation);
+	    }, function() {
+	      handleNoGeolocation(browserSupportFlag);
+	    });
+	  }
+	  // Browser doesn't support Geolocation
+	  else {
+	    browserSupportFlag = false;
+	    handleNoGeolocation(browserSupportFlag);
+	  }
+
+	  function handleNoGeolocation(errorFlag) {
+	    if (errorFlag == true) {
+	      alert("Geolocation service failed.");
+	      initialLocation = newyork;
+	    } else {
+	      alert("Your browser doesn't support geolocation. We've placed you in Siberia.");
+	      initialLocation = siberia;
+	    }
+	    map.setCenter(initialLocation);
+	  }
+
+	  function loadAirports() {
+		    var airportImage = "img/airport_marker.png";
+			$.getJSON('airport_locations.json', function(data) {
+	        $.each(data, function(index) {
+	            console.log('Lat' + data[index].FIELD7);
+	            console.log('Long' + data[index].FIELD8);
+	            placeMapMarker(data[index], airportImage);
+	        });
+	    });
+		}
+
+		function placeMapMarker(data, image) {
+		    var contentString = "<div> <h3>Airport Details</h3> <table> <tr> <td><b>Name</b></td> <td>" + data.FIELD2 + "</td> </tr> <tr> <td><b>City</b></td> <td>" + data.FIELD3 + "</td> </tr> <tr> <td><b>Country</b></td> <td>" + data.FIELD4 + "</td> </tr> <tr> <td><b>IATA/FAA</b></td> <td>" + data.FIELD5 + "</td> </tr> <tr> <td><b>ICAO</b></td> <td>" + data.FIELD6 + "</td> </tr> <tr> <td><b>Latitude</b></td> <td>" + data.FIELD7 + "</td> </tr> <tr> <td><b>Longitude</b></td> <td>" + data.FIELD8 + "</td> </tr> <tr> <td><b>Altitude (feet)</b></td> <td>" + data.FIELD9 + "</td> </tr> <tr> <td><b>Timezone</b></td> <td>" + data.FIELD10 + "</td> </tr> <tr> <td><b>DST (UTC offset)</b></td> <td>" + data.FIELD11 + "</td> </tr> </table> </div>";
+            var infowindow = new google.maps.InfoWindow({
+                content: contentString
+            });
+            var marker = new google.maps.Marker({
+                position: {lat: data.FIELD7, lng: data.FIELD8},
+                map: map,
+                icon: image
+            });
+            marker.addListener('click', function() {
+                infowindow.open(map, marker);
+            });
+		}
+	}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+  </script>
+
+
+
+  </body>
+</html>
